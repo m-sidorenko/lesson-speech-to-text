@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">speech-to-text-microphone</string>
+    <string name="default_text">Здесь будет текст, который вы надиктуете…</string>
+    <string name="btn_text">запустить распознавание речи</string>
+</resources>
