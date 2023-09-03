@@ -4,6 +4,7 @@ import android.content.Intent
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.util.Log
@@ -80,7 +81,9 @@ class MainActivity : AppCompatActivity() {
 
             //  будем работать с первым результатом
             //  проверяем, что в нем есть какие-то данные
-            if (recognitionResultList.first().isNotEmpty() && recognitionResultList.first().isNotBlank()) {
+            if (recognitionResultList.first().isNotEmpty() && recognitionResultList.first()
+                    .isNotBlank()
+            ) {
 
                 //-----------------------------------------------------------------
                 //--------  ЕСЛИ РАБОТАЕМ В РЕЖИМЕ РАСПОЗНАВАНИЯ КОМАНД    --------
@@ -122,13 +125,34 @@ class MainActivity : AppCompatActivity() {
         // аналог switch-case, в качестве параметра - текст команды
         when (modifyText) {
 
+            // ---------------------    ПОДЕЛИТЬСЯ ИНФОРМАЦИЕЙ ОБ УСТРОЙСТВЕ    ---------------------
+            "поделиться" -> {
+                // запрашиваем информацию об устройстве (бренд + название модели)
+                val deviceInfo = Build.BRAND + " " + Build.MODEL
+
+                // создаем намерение поделиться информацией
+                val sendIntent: Intent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    // добавляем текстовую информацию
+                    putExtra(Intent.EXTRA_TEXT, deviceInfo)
+                    type = "text/plain"
+                }
+
+                // Запускаем намерение выбора варианта, где поделиться информацией, с помощью
+                // создания объекта типа chooser. Это позволит нам вызвать окно, где пользователю
+                // будет предложено, где и как поделиться информацией (отправить кому-то в соц.сети,
+                // создать заметку, отправить по Bluetooth и т.п.)
+                startActivity(Intent.createChooser(sendIntent, null))
+            }
+
             // ---------------------    ВКЛ ФОНАРИК    ---------------------
             "включить фонарик" -> {
                 // на всякий случай подобные операции лучше заворачивать в try-catch блок,
                 // т.к. они аппаратно зависимы
                 try {
                     // получаем менеджер камер
-                    val cameraManager = this@MainActivity.getSystemService(CAMERA_SERVICE) as CameraManager
+                    val cameraManager =
+                        this@MainActivity.getSystemService(CAMERA_SERVICE) as CameraManager
 
                     // берем ID основной камеры (по-умолчанию она первая)
                     val camera = cameraManager.cameraIdList[0]
@@ -139,9 +163,10 @@ class MainActivity : AppCompatActivity() {
                     // выводим тост и пишем в лог
                     Toast.makeText(this@MainActivity, "Фонарик включен!", Toast.LENGTH_LONG).show()
                     Log.i(TAG, "Flashlight is turned on")
-                } catch (e: CameraAccessException){
+                } catch (e: CameraAccessException) {
                     // выводим тост с ошибкой и пишем в лог
-                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG)
+                        .show()
                     Log.e(TAG, "can't turn the flashlight on! Error: ${e.message}")
                 }
             }
@@ -149,13 +174,15 @@ class MainActivity : AppCompatActivity() {
             // ---------------------    ВЫКЛ ФОНАРИК    ---------------------
             "выключить фонарик" -> {
                 try {
-                    val cameraManager = this@MainActivity.getSystemService(CAMERA_SERVICE) as CameraManager
+                    val cameraManager =
+                        this@MainActivity.getSystemService(CAMERA_SERVICE) as CameraManager
                     val camera = cameraManager.cameraIdList[0]
                     cameraManager.setTorchMode(camera, false)
                     Toast.makeText(this@MainActivity, "Фонарик выключен!", Toast.LENGTH_LONG).show()
                     Log.i(TAG, "Flashlight is turned off")
-                } catch (e: CameraAccessException){
-                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                } catch (e: CameraAccessException) {
+                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG)
+                        .show()
                     Log.e(TAG, "can't turn the flashlight off! Error: ${e.message}")
                 }
             }
@@ -196,7 +223,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
 
-            // ---------------------    ОБРАБОТКА ЛЮОГО ДРУГОГО РЕЗУЛЬТАТА    ---------------------
+            // ---------------------    ОБРАБОТКА ЛЮБОГО ДРУГОГО РЕЗУЛЬТАТА    ---------------------
             // в любом другом случае выводим ошибку
             else -> {
                 Toast.makeText(
